@@ -17,9 +17,8 @@ This method will invoke a new instance.
 2. Display name: The name of the new instance
 3. Availability Domains: from a list of all available domains
 4. Shape: From a list of all shapes
-5. Operationg system
-6. Image: from a list of images
-7. Subnet: from a list of subnets
+5. Image: from a list of images
+6. Subnet: from a list of subnets
 
 ## Method: create VCN
 This method will create a new VCN
