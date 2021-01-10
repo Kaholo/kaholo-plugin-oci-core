@@ -36,9 +36,7 @@
         {
             "name":"REGION",
             "viewName":"Region",
-            "type":"autocomplete",
-            "autocompleteType":"function",
-            "functionName":"listRegion"
+            "type":"vault"
         }
     ],
     "methods":[
@@ -69,11 +67,6 @@
                     "type": "autocomplete",
                     "autocompleteType": "function",
                     "functionName": "listShapes"
-                },
-                {
-                    "name": "OS",
-                    "viewName": "Operating System",
-                    "type": "string"
                 },
                 {
                     "name":"IMAGES",
