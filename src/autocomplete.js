@@ -12,18 +12,15 @@ function mapAutoParams(autoParams){
   return params;
 }
 
-function handleResult(result, query, firstKey, secondKey){
+function handleResult(result, query, key){
   let items = result.items;
   if (items.length === 0) throw result;
-  if (!firstKey) {
-    firstKey = "id", secondKey = "name";
-  }
-  else if (!secondKey) {
-    secondKey = firstKey;
-  }
   items = items.map(item => ({
-    id: item[firstKey], 
-    value: item[secondKey] ? item[secondKey] : item[firstKey]
+    id: key ? item[key] : item.id, 
+    value:  key ? item[key] :
+            item.displayName ? item.displayName :
+            item.name ? item.name : 
+            item.id
   }));
 
   if (!query) return items;
@@ -95,7 +92,7 @@ async function listImages(query, pluginSettings, pluginActionParams) {
 
     const request = {compartmentId, shape};
     const result = await computeClient.listImages(request);
-    return handleResult(result, query, "id", "displayName");
+    return handleResult(result, query);
 }
 
 async function listVCN(query, pluginSettings, pluginActionParams) {
@@ -111,7 +108,7 @@ async function listVCN(query, pluginSettings, pluginActionParams) {
  
     const request = {compartmentId};
     const result = await virtualNetworkClient.listVcns(request);
-    return handleResult(result, query, "id", "displayName");
+    return handleResult(result, query);
 }
 
 async function listSubnets(query, pluginSettings, pluginActionParams) {
@@ -127,7 +124,7 @@ async function listSubnets(query, pluginSettings, pluginActionParams) {
 
   const request = {compartmentId};
   const result = await virtualNetworkClient.listSubnets(request);
-  return handleResult(result, query, "id", "displayName");
+  return handleResult(result, query);
 }
 
 async function listInstances(query, pluginSettings, pluginActionParams) {
@@ -143,7 +140,7 @@ async function listInstances(query, pluginSettings, pluginActionParams) {
 
   const request = {compartmentId};
   const result = await computeClient.listInstances(request);
-  return handleResult(result, query, "id", "displayName");
+  return handleResult(result, query);
 }
 
 module.exports = {
