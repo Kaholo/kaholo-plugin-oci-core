@@ -1,201 +1,161 @@
+const { listCompartments, listAvailabilityDomains, listShapes, listImages, listVCN, listSubnets, listInstances } = require('./autocomplete');
+const { getComupteClient, getVirtualNetworkClient } = require('./helpers');
+const parsers = require('./parsers');
 
-// JavaScript
-const core = require("oci-core")
-const common = require("oci-common");
-const identity = require("oci-identity");
-const wr = require("oci-workrequests");
-const { listCompartments, listAvailabilityDomains, listShapes, listImages, listVCN, listSubnet,listRegions } = require('./autocomplete');
-const { createOci, createPem, createProvider } = require('./helpers');
 async function launceInstance(action, settings) {
-  return new Promise(async (resolve, reject) => {
-    const privateKey = settings.PRIVATE_KEY;
-    const userId = settings.USER_ID;
-    const tenancyId = settings.TENANCY_ID;
-    const fingerPrint = settings.FINGERPRINT;
-    const region = settings.REGION;
-    const compartmentId = action.params.COMPARTMENT_ID.id ? action.params.COMPARTMENT_ID.id : action.params.COMPARTMENT_ID;
-    const displayName = action.params.DISPLAY_NAME;
-    const availabilityDomains = action.params.AVAILABILITY_DOMAIN.value ? action.params.AVAILABILITY_DOMAIN.value : action.params.AVAILABILITY_DOMAIN;
-    const actionShape = action.params.SHAPES.value ? action.params.SHAPES.value : action.params.SHAPES;
-    const actionImage = action.params.IMAGES.id ? action.params.IMAGES.id : action.params.IMAGES;
-    const subnet = action.params.SUBNET.id ? action.params.SUBNET.id : action.params.SUBNET;
-    await createOci(userId, tenancyId, fingerPrint, region);
-    await createPem(privateKey);
-    const provider = await createProvider();
-    const computeClient = new core.ComputeClient({
-      authenticationDetailsProvider: provider
-    });
-    const sourceDetails = {
-      imageId: actionImage,
+  const computeClient = getComupteClient(settings);
+  return computeClient.launchInstance({
+    compartmentId: parsers.autocomplete(action.params.compartment || settings.tenancyId),
+    availabilityDomain: parsers.autocomplete(action.params.availabilityDomain),
+    shape: parsers.autocomplete(action.params.shape),
+    displayName: parsers.string(action.params.name),
+    sourceDetails: {
+      imageId: parsers.autocomplete(action.params.image),
       sourceType: "image"
-    };
-    const launchInstanceDetails = {
-      compartmentId: compartmentId,
-      availabilityDomain: availabilityDomains,
-      shape: actionShape,
-      displayName: displayName,
-      sourceDetails: sourceDetails,
-      createVnicDetails: {
-        subnetId: subnet
-      }
-    };
-    const launchInstanceRequest = {
-      launchInstanceDetails: launchInstanceDetails
-    };
-    let launchInstanceResponse;
-    try {
-      launchInstanceResponse = await computeClient.launchInstance(launchInstanceRequest);
-    } catch (error) {
-      return reject(`exec error: ${error}`);
+    },
+    createVnicDetails: {
+      subnetId: parsers.autocomplete(action.params.subnet)
     }
-    return resolve(launchInstanceResponse);
   });
 }
 
 async function createVCN(action, settings) {
-  return new Promise(async (resolve, reject) => {
-    const privateKey = settings.PRIVATE_KEY;
-    const userId = settings.USER_ID;
-    const tenancyId = settings.TENANCY_ID;
-    const fingerPrint = settings.FINGERPRINT;
-    const region = settings.REGION;
-    await createOci(userId, tenancyId, fingerPrint, region);
-    await createPem(privateKey)
-    const provider = await createProvider();
-    const cidrBlock = action.params.CIDR_BLOCK;
-    const compartmentId = action.params.COMPARTMENT_ID.id ? action.params.COMPARTMENT_ID.id : action.params.COMPARTMENT_ID;
-
-    const virtualNetworkClient = new core.VirtualNetworkClient({
-      authenticationDetailsProvider: provider
-    });
-
-    const vcnName = action.params.VCN_NAME;
-    const createVcnDetails = {
-      cidrBlock: cidrBlock,
-      compartmentId: compartmentId,
-      displayName: vcnName
-    };
-    const createVcnRequest = {
-      createVcnDetails: createVcnDetails
-    };
-    let createVcnResponse;
-    try {
-      createVcnResponse = await virtualNetworkClient.createVcn(createVcnRequest);
-    } catch (error) {
-      return reject(`exec error: ${error}`);
+  const networkClient = getVirtualNetworkClient(settings);
+  return networkClient.createVcn({
+    createVcnDetails: {
+      cidrBlock: parsers.string(action.params.cidrBlock),
+      compartmentId: parsers.autocomplete(action.params.compartment || settings.tenancyId),
+      displayName: parsers.string(action.params.name)
     }
-    return resolve(createVcnResponse);
   });
 }
 
-async function createSubNet(action, settings) {
-  return new Promise(async (resolve, reject) => {
-    const privateKey = settings.PRIVATE_KEY;
-    const userId = settings.USER_ID;
-    const tenancyId = settings.TENANCY_ID;
-    const fingerPrint = settings.FINGERPRINT;
-    const region = settings.REGION;
-    await createOci(userId, tenancyId, fingerPrint, region);
-    await createPem(privateKey)
-    const provider = await createProvider();
-    const cidrBlock = action.params.CIDR_BLOCK;
-    const displayName = action.params.DISPLAY_NAME;
-    const compartmentId = action.params.COMPARTMENT_ID.id ? action.params.COMPARTMENT_ID.id : action.params.COMPARTMENT_ID;
-    const VCNId = action.params.VCN_ID.id ? action.params.VCN_ID.id : action.params.VCN_ID;
-    const virtualNetworkClient = new core.VirtualNetworkClient({
-      authenticationDetailsProvider: provider
-    });
-    const createSubnetRequest = {
-      createSubnetDetails: {
-        cidrBlock: cidrBlock,
-        compartmentId: compartmentId,
-        displayName: displayName,
-        vcnId: VCNId
-      }
+async function createSubnet(action, settings) {
+  const networkClient = getVirtualNetworkClient(settings);
+  return networkClient.createSubnet({
+    createSubnetDetails: {
+      cidrBlock: parsers.string(action.params.cidrBlock),
+      compartmentId: parsers.autocomplete(action.params.compartment || settings.tenancyId),
+      displayName: parsers.string(action.params.name),
+      vcnId: parsers.autocomplete(action.params.vcn)
     }
-    let createSubnetResponse;
-    try {
-      createSubnetResponse = await virtualNetworkClient.createSubnet(createSubnetRequest);
-    } catch (error) {
-      return reject(`exec error ${error}`);
-    }
-    return resolve(createSubnetResponse);
-
   });
 }
 
 async function deleteVCN(action, settings) {
   /** 
-   * This method deletes VCN.
+   * This method deletes a VCN.
    */
-  return new Promise(async (resolve, reject) => {
-    const vcnID = action.params.VCN.id ? action.params.VCN.id : action.params.VCN;
-    const privateKey = settings.PRIVATE_KEY;
-    const userId = settings.USER_ID;
-    const tenancyId = settings.TENANCY_ID;
-    const fingerPrint = settings.FINGERPRINT;
-    const region = settings.REGION;
-    await createOci(userId, tenancyId, fingerPrint, region);
-    await createPem(privateKey);
-    const provider = await createProvider();
-    const virtualNetworkClient = new core.VirtualNetworkClient({
-      authenticationDetailsProvider: provider
-    });
-    const deleteVCNRequest = {
-      vcnId: vcnID
-    }
-    let deleteVCNRespose;
-    try {
-      deleteVCNRespose = await virtualNetworkClient.deleteVcn(deleteVCNRequest);
-    } catch (error) {
-      return reject(`exec error: ${error}`);
-    }
-    return resolve(deleteVCNRespose);
-  });
-
-}
-
-async function deleteSubNet(action, settings) {
-  return new Promise(async (resolve, reject) => {
-    const subnetId = action.params.SUBNET.id ? action.params.SUBNET.id : action.params.SUBNET;
-    const privateKey = settings.PRIVATE_KEY;
-    const userId = settings.USER_ID;
-    const tenancyId = settings.TENANCY_ID;
-    const fingerPrint = settings.FINGERPRINT;
-    const region = settings.REGION;
-    await createOci(userId, tenancyId, fingerPrint, region);
-    await createPem(privateKey);
-    const provider = await createProvider();
-    const virtualNetworkClient = new core.VirtualNetworkClient({
-      authenticationDetailsProvider: provider
-    });
-    const deleteSubnetRequest = {
-      subnetId: subnetId
-    }
-    let deleteSubnetRespose;
-    try {
-      deleteSubnetRespose = await virtualNetworkClient.deleteSubnet(deleteSubnetRequest);
-    } catch (error) {
-      return reject(`exec error: ${error}`);
-    }
-    return resolve(deleteSubnetRespose);
+  const networkClient = getVirtualNetworkClient(settings);
+  return networkClient.deleteVcn({
+    vcnId: parsers.autocomplete(action.params.vcn)
   });
 }
 
+async function deleteSubnet(action, settings) {
+  const subnetId = parsers.autocomplete(action.params.subnet);
+  const networkClient = getVirtualNetworkClient(settings);
+  const request = { subnetId }
+  return networkClient.deleteSubnet(request);
+}
+
+async function createSubnet(action, settings) {
+  const networkClient = getVirtualNetworkClient(settings);
+  return networkClient.createSubnet({
+    createSubnetDetails: {
+      cidrBlock: parsers.string(action.params.cidrBlock),
+      compartmentId: parsers.autocomplete(action.params.compartment || settings.tenancyId),
+      displayName: parsers.string(action.params.name),
+      vcnId: parsers.autocomplete(action.params.vcn)
+    }
+  })
+}
+
+async function createSecurityList(action, settings) {
+  const defaultEgressRules = [{
+    protocol: "all",
+    destination: "0.0.0.0/0"
+  }];
+  const defaultIngressRules = [{
+    protocol: "all",
+    source: "0.0.0.0/0"
+  }];
+  const networkClient = getVirtualNetworkClient(settings);
+  return networkClient.createSecurityList({
+    createSecurityListDetails: {
+      compartmentId: parsers.autocomplete(action.params.compartment || settings.tenancyId),
+      vcnId: parsers.autocomplete(action.params.vcn),
+      displayName: parsers.string(action.params.name),
+      egressSecurityRules: parsers.array(action.params.egressSecurityRules) || defaultEgressRules,
+      ingressSecurityRules: parsers.array(action.params.ingressSecurityRules) || defaultIngressRules
+    }
+  });
+}
+
+async function createInternetGateway(action, settings) {
+  const networkClient = getVirtualNetworkClient(settings);
+  return networkClient.createInternetGateway({
+    createInternetGatewayDetails: {
+      compartmentId: parsers.autocomplete(action.params.compartment || settings.tenancyId),
+      vcnId: parsers.autocomplete(action.params.vcn),
+      displayName: parsers.string(action.params.name)
+    }
+  });
+}
+
+async function createRouteTable(action, settings) {
+  const networkClient = getVirtualNetworkClient(settings);
+  const destinations = parsers.array(action.params.destinations);
+  const networkEntityIds = parsers.array(action.params.networkEntityIds);
+  if (destinations.length !== networkEntityIds.length){
+    throw "Destinations and Network Entity IDs must be the same length";
+  }
+  if (destinations.length === 0){
+    throw "Must specify at least one destination and network entity ID";
+  }
+  return networkClient.createRouteTable({
+    createRouteTableDetails: {
+      compartmentId: parsers.autocomplete(action.params.compartment || settings.tenancyId),
+      vcnId: parsers.autocomplete(action.params.vcn),
+      displayName: parsers.string(action.params.name),
+      routeRules: destinations.forEach((destination, index) => ({
+        destination,
+        destinationType: action.params.destinationType || "CIDR_BLOCK",
+        networkEntityId: networkEntityIds[index],
+        description: parsers.string(action.params.description)
+      }))
+    }
+  });
+}
+
+// currenly can only update instance shape, but it's easy to add other params
+async function updateInstance(action, settings) {
+  const computeClient = getComupteClient(settings);
+  return computeClient.updateInstance({
+    instanceId: parsers.autocomplete(action.params.instance),
+    updateInstanceDetails: {
+      shape: parsers.autocomplete(action.params.shape)
+    }
+  })
+}
 
 module.exports = {
-  LAUNCH_INSTANCE: launceInstance,
-  CREATE_VCN: createVCN,
-  DELETE_VCN: deleteVCN,
-  CREATE_SUBNET: createSubNet,
-  DELETE_SUBNET: deleteSubNet,
+  launceInstance,
+  createVCN,
+  deleteVCN,
+  createSubnet,
+  deleteSubnet,
+  createSecurityList,
+  createInternetGateway,
+  createRouteTable,
+  updateInstance,
   //autocomplete
   listAvailabilityDomains,
   listCompartments,
   listShapes,
   listImages,
   listVCN,
-  listSubnet,
-  listRegions
+  listSubnets, 
+  listInstances
 }
 

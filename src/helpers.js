@@ -1,44 +1,64 @@
 const fs = require("fs");
 const common = require("oci-common");
+const core = require("oci-core")
 
-async function createOci(user, tenancy, finger, region) {
-    const path = __dirname;
-    const content = `[DEFAULT]\nuser=${user}\nfingerprint=${finger}\ntenancy=${tenancy}\nregion=${region}\nkey_file=${path}/kaholo.pem`;
-    return new Promise((resolve, reject) => {
-        fs.writeFile(`${path}/.oci`, content, (err) => {
-            if (err) reject(err)
-            else resolve()
-        });
-    })
-}
-
-async function createPem(pem) {
-    const path = __dirname;
+function createConfigFile(settings){
+    const configPath = `${__dirname}/.oci`;
+    // Create pem file
+    const pemPath = `${__dirname}/kaholo.pem`;
+    let pem = settings.privateKey;
     pem = pem.replace(/-----BEGIN PRIVATE KEY-----/g,'' )
     pem = pem.replace(/-----END PRIVATE KEY-----/g,'');
     pem = pem.replace(/ /g,'\n');
     pem = "-----BEGIN PRIVATE KEY-----\n"+pem+"-----END PRIVATE KEY-----"
-    return new Promise((resolve, reject) => {
-        fs.writeFile(`${path}/kaholo.pem`, pem, (err) => {
-            if (err) reject(err)
-            else resolve()
-        });
+    fs.writeFileSync(pemPath, pem);
+    // Create OCI file
+    const content = `[DEFAULT]
+    user=${settings.userId}
+    fingerprint=${settings.fingerprint}
+    tenancy=${settings.tenancyId}
+    region=${settings.region}
+    key_file=${pemPath}`;
+    fs.writeFileSync(configPath, content);
+}
+
+/***
+ * @returns {common.ConfigFileAuthenticationDetailsProvider} OCI Config File Auth Details Providers
+ ***/
+function getProvider(settings){
+    const configPath = `${__dirname}/.oci`;
+    if (!fs.existsSync(configPath)){
+        createConfigFile(settings);
+    }
+    // Create provider from oci file
+    return new common.ConfigFileAuthenticationDetailsProvider(
+        configPath,
+        "DEFAULT"
+    );
+}
+
+/***
+ * @returns {core.ComputeClient} OCI Compute Client
+ ***/
+function getComupteClient(settings){
+    const provider = getProvider(settings);
+    return new core.ComputeClient({
+      authenticationDetailsProvider: provider
     });
 }
 
-async function createProvider () {
-    const path = __dirname;
-    const configFilePath = `${path}/.oci`;
-    const profile = "DEFAULT";
-    const provider = await new common.ConfigFileAuthenticationDetailsProvider(
-      configFilePath,
-      profile
-    );
-    return provider;
-  }
+/***
+ * @returns {core.VirtualNetworkClient} OCI Virtual Network Client
+ ***/
+function getVirtualNetworkClient(settings){
+    const provider = getProvider(settings);
+    return new core.VirtualNetworkClient({
+      authenticationDetailsProvider: provider
+    });
+}
   
 module.exports = {
-    createOci,
-    createPem,
-    createProvider
+    getComupteClient,
+    getProvider,
+    getVirtualNetworkClient
 }

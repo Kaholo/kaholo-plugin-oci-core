@@ -5,103 +5,100 @@
     "main": "app.js",
     "exposeRoute": true,
     "imgUrl": "oci.png",
-    "version": "1.0.0",
-    "description": "Integration with Oracle Cloud Instances",
+    "version": "1.1.0",
+    "description": "Integration with OCI Instances",
     "settings": [
         {
-            "name":"ROOT_COMPARTMENT",
-            "viewName": "Root Compartment ID",
-            "type": "vault"
-        },
-        {
-            "name":"PRIVATE_KEY",
+            "name":"privateKey",
             "viewName":"Private key",
             "type":"vault"
         },
         {
-            "name":"USER_ID",
+            "name":"userId",
             "viewName":"User Id",
-            "type":"vault"
+            "type":"string"
         },
         {
-            "name":"TENANCY_ID",
+            "name":"tenancyId",
             "viewName":"Tenancy Id",
-            "type":"vault"
+            "type":"string"
         },
         {
-            "name":"FINGERPRINT",
+            "name":"fingerprint",
             "viewName":"Fingerprint",
             "type":"vault"
         },
         {
-            "name":"REGION",
+            "name":"region",
             "viewName":"Region",
-            "type":"vault"
+            "type":"string"
         }
     ],
     "methods":[
         {
-            "name":"LAUNCH_INSTANCE",
+            "name":"launceInstance",
             "viewName":"Launch Instance",
             "params": [
                 {
-                    "name": "COMPARTMENT_ID",
-                    "viewName": "Compartment",
-                    "type": "string"
-                },
-                {
-                    "name": "DISPLAY_NAME",
-                    "viewName": "Display name",
-                    "type": "string"
-                },
-                {
-                    "name":"AVAILABILITY_DOMAIN",
-                    "viewName": "Availability domain",
-                    "type": "autocomplete",
-                    "autocompleteType": "function",
-                    "functionName": "listAvailabilityDomains"
-                },
-                {
-                    "name":"SHAPES",
-                    "viewName": "Shape",
-                    "type": "autocomplete",
-                    "autocompleteType": "function",
-                    "functionName": "listShapes"
-                },
-                {
-                    "name":"IMAGES",
-                    "viewName": "Image",
-                    "type": "autocomplete",
-                    "autocompleteType": "function",
-                    "functionName": "listImages"
-                },
-                {
-                    "name":"SUBNET",
-                    "viewName":"Subnet",
-                    "type":"autocomplete",
-                    "autocompleteType":"function",
-                    "functionName":"listSubnet"
-                }
-            ]
-        },
-        {
-            "name":"CREATE_VCN",
-            "viewName": "Create VCN",
-            "params": [
-                {
-                    "name":"VCN_NAME",
-                    "viewName":"VCN name",
-                    "type": "string"
-                },
-                {
-                    "name": "COMPARTMENT_ID",
+                    "name": "compartment",
                     "viewName": "Compartment",
                     "type": "autocomplete",
                     "autocompleteType":"function",
                     "functionName":"listCompartments"
                 },
                 {
-                    "name": "CIDR_BLOCK",
+                    "name": "name",
+                    "viewName": "Display name",
+                    "type": "string"
+                },
+                {
+                    "name":"availabilityDomain",
+                    "viewName": "Availability domain",
+                    "type": "autocomplete",
+                    "autocompleteType": "function",
+                    "functionName": "listAvailabilityDomains"
+                },
+                {
+                    "name":"shape",
+                    "viewName": "Shape",
+                    "type": "autocomplete",
+                    "autocompleteType": "function",
+                    "functionName": "listShapes"
+                },
+                {
+                    "name":"image",
+                    "viewName": "Image",
+                    "type": "autocomplete",
+                    "autocompleteType": "function",
+                    "functionName": "listImages"
+                },
+                {
+                    "name":"subnet",
+                    "viewName":"Subnet",
+                    "type": "autocomplete",
+                    "autocompleteType": "function",
+                    "functionName": "listSubnets"
+                }
+            ]
+        },
+        {
+            "name":"createVCN",
+            "viewName": "Create VCN",
+            "params": [
+                {
+                    "name":"name",
+                    "viewName":"VCN name",
+                    "type": "string"
+                },
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name": "cidrBlock",
                     "viewName": "CIDR block",
                     "type": "string"
                 }
@@ -109,28 +106,28 @@
             ]
         },
         {
-            "name":"CREATE_SUBNET",
+            "name":"createSubnet",
             "viewName":"Create subnet",
             "params":[
                 {
-                    "name":"DISPLAY_NAME",
+                    "name":"name",
                     "viewName": "Subnet Name",
                     "type": "string"
                 },
                 {
-                    "name": "COMPARTMENT_ID",
+                    "name": "compartment",
                     "viewName": "Compartment",
                     "type": "autocomplete",
                     "autocompleteType":"function",
                     "functionName":"listCompartments"
                 },
                 {
-                    "name": "CIDR_BLOCK",
+                    "name": "cidrBlock",
                     "viewName": "CIDR block",
                     "type": "string"
                 },
                 {
-                    "name":"VCN_ID",
+                    "name":"vcn",
                     "viewName":"VCN",
                     "type":"autocomplete",
                     "autocompleteType":"function",
@@ -139,11 +136,18 @@
             ]
         },
         {
-            "name":"DELETE_VCN",
+            "name":"deleteVCN",
             "viewName": "Delete VCN",
             "params":[
                 {
-                    "name":"VCN",
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"vcn",
                     "viewName": "VCN",
                     "type":"autocomplete",
                     "autocompleteType":"function",
@@ -152,15 +156,164 @@
             ]
         },
         {
-            "name":"DELETE_SUBNET",
+            "name":"deleteSubnet",
             "viewName":"Delete subnet",
             "params":[
                 {
-                    "name":"SUBNET",
-                    "viewName": "Subnet",
-                    "type":"autocomplete",
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
                     "autocompleteType":"function",
-                    "functionName": "listSubnet"
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"subnet",
+                    "viewName": "Subnet",
+                    "type": "autocomplete",
+                    "autocompleteType": "function",
+                    "functionName": "listSubnets"
+                }
+            ]
+        },
+        {
+            "name":"createSecurityList",
+            "viewName":"Create Security List",
+            "params":[
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"name",
+                    "viewName": "Name",
+                    "type":"string"
+                },
+                {
+                    "name":"vcn",
+                    "viewName": "VCN",
+                    "type": "autocomplete",
+                    "autocompleteType": "function",
+                    "functionName": "listVCN"
+                },
+                {
+                    "name":"egressSecurityRules",
+                    "viewName": "Egress Security Rules(Array)",
+                    "type":"string"
+                },
+                {
+                    "name":"ingressSecurityRules",
+                    "viewName": "Ingress Security Rules(Array)",
+                    "type":"string"
+                }
+            ]
+        },
+        {
+            "name":"createInternetGateway",
+            "viewName":"Create Internet Gateway",
+            "params":[
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"name",
+                    "viewName": "Name",
+                    "type":"string"
+                },
+                {
+                    "name":"vcn",
+                    "viewName": "VCN",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listVCN"
+                }
+            ]
+        },
+        {
+            "name":"createRouteTable",
+            "viewName":"Create Route Table",
+            "params":[
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"name",
+                    "viewName": "Name",
+                    "type":"string"
+                },
+                {
+                    "name":"vcn",
+                    "viewName": "VCN",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listVCN"
+                },
+                {
+                    "name":"destinations",
+                    "viewName": "Rules Destinations",
+                    "type":"text"
+                },
+                {
+                    "name":"networkEntityIds",
+                    "viewName": "Rules Network Entity IDs",
+                    "type":"text"
+                },
+                {
+                    "name":"destinationsType",
+                    "viewName": "Destinations Type",
+                    "type":"options",
+                    "options": [
+                        {
+                            "id": "CIDR_BLOCK",
+                            "name": "CIDR_BLOCK"
+                        },
+                        {
+                            "id": "SERVICE_CIDR_BLOCK",
+                            "name": "SERVICE_CIDR_BLOCK"
+                        }
+                    ]
+                },
+                {
+                    "name":"description",
+                    "viewName": "Rules Description",
+                    "type":"text"
+                }
+            ]
+        },
+        {
+            "name":"updateInstance",
+            "viewName":"Update Instance",
+            "params":[
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"instance",
+                    "viewName": "Instance",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listInstances"
+                },
+                {
+                    "name":"shape",
+                    "viewName": "Shape",
+                    "type": "autocomplete",
+                    "autocompleteType": "function",
+                    "functionName": "listShapes"
                 }
             ]
         }
