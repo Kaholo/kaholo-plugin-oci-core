@@ -4,6 +4,9 @@ const parsers = require('./parsers');
 
 async function launceInstance(action, settings) {
   const computeClient = getComupteClient(settings);
+  if (action.params.userData){ // Translate user data to base 64
+    action.params.userData = Buffer.from(action.params.userData).toString("base64");
+  }
   let result = await computeClient.launchInstance({
     launchInstanceDetails: {
       compartmentId: parsers.autocomplete(action.params.compartment || settings.tenancyId),
@@ -34,10 +37,17 @@ async function launceInstance(action, settings) {
 
 async function instanceAction(action, settings) {
   const computeClient = getComupteClient(settings);
-  return computeClient.instanceAction({
+  let result = await computeClient.instanceAction({
     instanceId: parsers.autocomplete(action.params.instance),
     action: action.params.action
   });
+  if (action.params.waitFor){
+    const waiters = getCoreWaiter(settings);
+    result = await waiters.forInstance(
+      {instanceId: result.instance.id},
+      ["START", "RESET"].includes(action.params.action) ? Instance.LifecycleState.Running : Instance.LifecycleState.Stopped);
+  }
+  return result;
 }
 
 async function createVCN(action, settings) {
@@ -181,7 +191,8 @@ async function updateInstance(action, settings) {
   return computeClient.updateInstance({
     instanceId: parsers.autocomplete(action.params.instance),
     updateInstanceDetails: {
-      shape: parsers.autocomplete(action.params.shape)
+      shape: parsers.autocomplete(action.params.shape),
+      displayName: parsers.string(action.params.name)
     }
   })
 }

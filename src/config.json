@@ -114,12 +114,12 @@
                 },
                 {
                     "name": "cidrBlock",
-                    "viewName": "CIDR block",
+                    "viewName": "CIDR Block",
                     "type": "string"
                 },
                 {
                     "name": "subCidrBlock",
-                    "viewName": "Subnet CIDR block",
+                    "viewName": "Subnet CIDR Block",
                     "type": "string"
                 },
                 {
@@ -338,6 +338,11 @@
                     "functionName":"listInstances"
                 },
                 {
+                    "name": "name",
+                    "viewName": "Display Name",
+                    "type": "string"
+                },
+                {
                     "name":"shape",
                     "viewName": "Shape",
                     "type": "autocomplete",
@@ -386,6 +391,11 @@
                             "name": "SOFTSTOP"
                         }
                     ]
+                },
+                {
+                    "name":"waitFor",
+                    "viewName": "Wait Until Finished",
+                    "type": "boolean"
                 }
             ]
         }
