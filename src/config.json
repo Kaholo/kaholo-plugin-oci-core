@@ -1,0 +1,403 @@
+{
+    "name": "OCI-Core",
+    "type": "executer",
+    "execProgram": "node",
+    "main": "app.js",
+    "exposeRoute": true,
+    "imgUrl": "oci.png",
+    "version": "1.1.0",
+    "description": "Integration with Oracle Cloud(OCI) Core Services(Instances and Virtual Networks)",
+    "settings": [
+        {
+            "name":"privateKey",
+            "viewName":"Private key",
+            "type":"vault"
+        },
+        {
+            "name":"userId",
+            "viewName":"User Id",
+            "type":"string"
+        },
+        {
+            "name":"tenancyId",
+            "viewName":"Tenancy Id",
+            "type":"string"
+        },
+        {
+            "name":"fingerprint",
+            "viewName":"Fingerprint",
+            "type":"vault"
+        },
+        {
+            "name":"region",
+            "viewName":"Region",
+            "type":"string"
+        }
+    ],
+    "methods":[
+        {
+            "name":"launceInstance",
+            "viewName":"Launch Instance",
+            "params": [
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name": "name",
+                    "viewName": "Display name",
+                    "type": "string"
+                },
+                {
+                    "name":"availabilityDomain",
+                    "viewName": "Availability domain",
+                    "type": "autocomplete",
+                    "autocompleteType": "function",
+                    "functionName": "listAvailabilityDomains"
+                },
+                {
+                    "name":"shape",
+                    "viewName": "Shape",
+                    "type": "autocomplete",
+                    "autocompleteType": "function",
+                    "functionName": "listShapes"
+                },
+                {
+                    "name":"image",
+                    "viewName": "Image",
+                    "type": "autocomplete",
+                    "autocompleteType": "function",
+                    "functionName": "listImages"
+                },
+                {
+                    "name":"subnet",
+                    "viewName":"Subnet",
+                    "type": "autocomplete",
+                    "autocompleteType": "function",
+                    "functionName": "listSubnets"
+                },
+                {
+                    "name":"sshKeys",
+                    "viewName":"SSH Keys",
+                    "type": "text"
+                },
+                {
+                    "name":"userData",
+                    "viewName":"User Data",
+                    "type": "text"
+                },
+                {
+                    "name":"waitFor",
+                    "viewName":"Wait for Creation",
+                    "type": "boolean"
+                }
+            ]
+        },
+        {
+            "name":"createVCN",
+            "viewName": "Create VCN",
+            "params": [
+                {
+                    "name":"name",
+                    "viewName":"VCN name",
+                    "type": "string"
+                },
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name": "cidrBlock",
+                    "viewName": "CIDR Block",
+                    "type": "string"
+                },
+                {
+                    "name": "subCidrBlock",
+                    "viewName": "Subnet CIDR Block",
+                    "type": "string"
+                },
+                {
+                    "name": "createInternetGateway",
+                    "viewName": "Create Internet Gateway",
+                    "type": "boolean"
+                },
+                {
+                    "name": "createRouteTable",
+                    "viewName": "Create Default Route Table",
+                    "type": "boolean"
+                }
+            ]
+        },
+        {
+            "name":"createSubnet",
+            "viewName":"Create subnet",
+            "params":[
+                {
+                    "name":"name",
+                    "viewName": "Subnet Name",
+                    "type": "string"
+                },
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name": "cidrBlock",
+                    "viewName": "CIDR block",
+                    "type": "string"
+                },
+                {
+                    "name":"vcn",
+                    "viewName":"VCN",
+                    "type":"autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listVCN"
+                }
+            ]
+        },
+        {
+            "name":"deleteVCN",
+            "viewName": "Delete VCN",
+            "params":[
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"vcn",
+                    "viewName": "VCN",
+                    "type":"autocomplete",
+                    "autocompleteType":"function",
+                    "functionName": "listVCN"
+                }
+            ]
+        },
+        {
+            "name":"deleteSubnet",
+            "viewName":"Delete subnet",
+            "params":[
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"subnet",
+                    "viewName": "Subnet",
+                    "type": "autocomplete",
+                    "autocompleteType": "function",
+                    "functionName": "listSubnets"
+                }
+            ]
+        },
+        {
+            "name":"createSecurityList",
+            "viewName":"Create Security List",
+            "params":[
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"name",
+                    "viewName": "Name",
+                    "type":"string"
+                },
+                {
+                    "name":"vcn",
+                    "viewName": "VCN",
+                    "type": "autocomplete",
+                    "autocompleteType": "function",
+                    "functionName": "listVCN"
+                },
+                {
+                    "name":"egressSecurityRules",
+                    "viewName": "Egress Security Rules(Array)",
+                    "type":"string"
+                },
+                {
+                    "name":"ingressSecurityRules",
+                    "viewName": "Ingress Security Rules(Array)",
+                    "type":"string"
+                }
+            ]
+        },
+        {
+            "name":"createInternetGateway",
+            "viewName":"Create Internet Gateway",
+            "params":[
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"name",
+                    "viewName": "Name",
+                    "type":"string"
+                },
+                {
+                    "name":"vcn",
+                    "viewName": "VCN",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listVCN"
+                }
+            ]
+        },
+        {
+            "name":"createRouteTable",
+            "viewName":"Create Route Table",
+            "params":[
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"name",
+                    "viewName": "Name",
+                    "type":"string"
+                },
+                {
+                    "name":"vcn",
+                    "viewName": "VCN",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listVCN"
+                },
+                {
+                    "name":"destinations",
+                    "viewName": "Rules Destinations",
+                    "type":"text"
+                },
+                {
+                    "name":"networkEntityIds",
+                    "viewName": "Rules Network Entity IDs",
+                    "type":"text"
+                },
+                {
+                    "name":"destinationsType",
+                    "viewName": "Destinations Type",
+                    "type":"options",
+                    "options": [
+                        {
+                            "id": "CIDR_BLOCK",
+                            "name": "CIDR_BLOCK"
+                        },
+                        {
+                            "id": "SERVICE_CIDR_BLOCK",
+                            "name": "SERVICE_CIDR_BLOCK"
+                        }
+                    ]
+                },
+                {
+                    "name":"description",
+                    "viewName": "Rules Description",
+                    "type":"text"
+                }
+            ]
+        },
+        {
+            "name":"updateInstance",
+            "viewName":"Update Instance",
+            "params":[
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"instance",
+                    "viewName": "Instance",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listInstances"
+                },
+                {
+                    "name": "name",
+                    "viewName": "Display Name",
+                    "type": "string"
+                },
+                {
+                    "name":"shape",
+                    "viewName": "Shape",
+                    "type": "autocomplete",
+                    "autocompleteType": "function",
+                    "functionName": "listShapes"
+                }
+            ]
+        },
+        {
+            "name":"instanceAction",
+            "viewName":"Instance Action",
+            "params":[
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"instance",
+                    "viewName": "Instance",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listInstances"
+                },
+                {
+                    "name":"action",
+                    "viewName": "Action",
+                    "type": "options",
+                    "options": [
+                        {
+                            "id": "START",
+                            "name": "START"
+                        },
+                        {
+                            "id": "STOP",
+                            "name": "STOP"
+                        },
+                        {
+                            "id": "RESET",
+                            "name": "RESET"
+                        },
+                        {
+                            "id": "SOFTSTOP",
+                            "name": "SOFTSTOP"
+                        }
+                    ]
+                },
+                {
+                    "name":"waitFor",
+                    "viewName": "Wait Until Finished",
+                    "type": "boolean"
+                }
+            ]
+        }
+    ]
+}
