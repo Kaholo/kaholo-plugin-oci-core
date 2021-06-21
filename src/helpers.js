@@ -1,6 +1,7 @@
 const fs = require("fs");
 const common = require("oci-common");
-const core = require("oci-core")
+const core = require("oci-core");
+const wr = require("oci-workrequests");
 
 function createConfigFile(settings){
     const configPath = `${__dirname}/.oci`;
@@ -56,9 +57,33 @@ function getVirtualNetworkClient(settings){
       authenticationDetailsProvider: provider
     });
 }
+
+/***
+ * @returns {core.ComputeWaiter} OCI Virtual Network Waiter
+ ***/
+ function getCoreWaiter(settings){
+    const provider = getProvider(settings);
+    const computeClient = getComupteClient(settings);
+    const wrClient =  new wr.WorkRequestClient({
+      authenticationDetailsProvider: provider
+    });
+    return computeClient.createWaiters(wrClient);
+}
+
+async function setPromiseResult(result, key, prom){
+    try {
+        result[key] = await prom;
+    }
+    catch (err) {
+        result[key] = err;
+        throw result;
+    }
+}
   
 module.exports = {
     getComupteClient,
     getProvider,
-    getVirtualNetworkClient
+    getVirtualNetworkClient,
+    setPromiseResult,
+    getCoreWaiter
 }

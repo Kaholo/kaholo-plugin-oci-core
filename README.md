@@ -1,5 +1,5 @@
-# kaholo-plugin-oci-instances
-Thi plugin integrate with Oracle Cloud to create instances
+# kaholo-plugin-oci-core
+Integration with Oracle Cloud(OCI) Core Services(Instances and Virtual Networks)
 
 ## Settings
 1. Compartment ID (vault)

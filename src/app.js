@@ -1,33 +1,79 @@
-const { listCompartments, listAvailabilityDomains, listShapes, listImages, listVCN, listSubnets, listInstances } = require('./autocomplete');
-const { getComupteClient, getVirtualNetworkClient } = require('./helpers');
+const { getComupteClient, getVirtualNetworkClient, setPromiseResult, getCoreWaiter } = require('./helpers');
+const {Instance} = require("oci-core").models;
 const parsers = require('./parsers');
 
 async function launceInstance(action, settings) {
   const computeClient = getComupteClient(settings);
-  return computeClient.launchInstance({
-    compartmentId: parsers.autocomplete(action.params.compartment || settings.tenancyId),
-    availabilityDomain: parsers.autocomplete(action.params.availabilityDomain),
-    shape: parsers.autocomplete(action.params.shape),
-    displayName: parsers.string(action.params.name),
-    sourceDetails: {
-      imageId: parsers.autocomplete(action.params.image),
-      sourceType: "image"
-    },
-    createVnicDetails: {
-      subnetId: parsers.autocomplete(action.params.subnet)
+  let result = await computeClient.launchInstance({
+    launchInstanceDetails: {
+      compartmentId: parsers.autocomplete(action.params.compartment || settings.tenancyId),
+      availabilityDomain: parsers.autocomplete(action.params.availabilityDomain),
+      shape: parsers.autocomplete(action.params.shape),
+      displayName: parsers.string(action.params.name),
+      sourceDetails: {
+        imageId: parsers.autocomplete(action.params.image),
+        sourceType: "image",
+      },
+      createVnicDetails: {
+        subnetId: parsers.autocomplete(action.params.subnet)
+      },
+      metadata: {
+        ssh_authorized_keys: parsers.string(action.params.sshKeys),
+        user_data: parsers.string(action.params.userData)
+      }
     }
+  });
+  if (action.params.waitFor){
+    const waiters = getCoreWaiter(settings);
+    result = await waiters.forInstance(
+      {instanceId: result.instance.id},
+      Instance.LifecycleState.Running);
+  }
+  return result;
+}
+
+async function instanceAction(action, settings) {
+  const computeClient = getComupteClient(settings);
+  return computeClient.instanceAction({
+    instanceId: parsers.autocomplete(action.params.instance),
+    action: action.params.action
   });
 }
 
 async function createVCN(action, settings) {
   const networkClient = getVirtualNetworkClient(settings);
-  return networkClient.createVcn({
-    createVcnDetails: {
-      cidrBlock: parsers.string(action.params.cidrBlock),
-      compartmentId: parsers.autocomplete(action.params.compartment || settings.tenancyId),
-      displayName: parsers.string(action.params.name)
+  const result = {
+    createVcn: await networkClient.createVcn({
+      createVcnDetails: {
+        cidrBlock: parsers.string(action.params.cidrBlock),
+        compartmentId: parsers.autocomplete(action.params.compartment) || settings.tenancyId,
+        displayName: parsers.string(action.params.name)
+      }
+    })
+  };
+  const vcnId = result.createVcn.vcn.id;
+  action.params.vcn = vcnId;
+  const shortId = vcnId.substring(vcnId.length - 4);
+  if (action.params.subCidrBlock){
+    action.params.cidrBlock = action.params.subCidrBlock;
+    action.params.name = `default_subnet_${shortId}`;
+    await setPromiseResult(result, "createSubnet", createSubnet(action, settings));
+  }
+  if (action.params.createInternetGateway){
+    action.params.name = `main_internet_gateway_${shortId}`;
+    await setPromiseResult(result, "createInternetGateway", createInternetGateway(action, settings));
+    if (action.params.createRouteTable){
+      action.params.name = `default_route_table_${shortId}`;
+      action.params.destinations = ["0.0.0.0/0"];
+      action.params.networkEntityIds = [result.createInternetGateway.internetGateway.id];
+      action.params.description = "Default Route To Interenet";
+      await setPromiseResult(result, "createRouteTable", createRouteTable(action, settings));
     }
-  });
+  }
+  else if (action.params.createRouteTable){
+    throw "Can't create default route table with no internet gateway!";
+  }
+  return result;
 }
 
 async function createSubnet(action, settings) {
@@ -98,7 +144,8 @@ async function createInternetGateway(action, settings) {
     createInternetGatewayDetails: {
       compartmentId: parsers.autocomplete(action.params.compartment || settings.tenancyId),
       vcnId: parsers.autocomplete(action.params.vcn),
-      displayName: parsers.string(action.params.name)
+      displayName: parsers.string(action.params.name),
+      isEnabled: true
     }
   });
 }
@@ -118,7 +165,7 @@ async function createRouteTable(action, settings) {
       compartmentId: parsers.autocomplete(action.params.compartment || settings.tenancyId),
       vcnId: parsers.autocomplete(action.params.vcn),
       displayName: parsers.string(action.params.name),
-      routeRules: destinations.forEach((destination, index) => ({
+      routeRules: destinations.map((destination, index) => ({
         destination,
         destinationType: action.params.destinationType || "CIDR_BLOCK",
         networkEntityId: networkEntityIds[index],
@@ -149,13 +196,8 @@ module.exports = {
   createInternetGateway,
   createRouteTable,
   updateInstance,
+  instanceAction,
   //autocomplete
-  listAvailabilityDomains,
-  listCompartments,
-  listShapes,
-  listImages,
-  listVCN,
-  listSubnets, 
-  listInstances
+  ...require('./autocomplete')
 }
 

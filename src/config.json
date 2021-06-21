@@ -1,12 +1,12 @@
 {
-    "name": "OCI-Instances",
+    "name": "OCI-Core",
     "type": "executer",
     "execProgram": "node",
     "main": "app.js",
     "exposeRoute": true,
     "imgUrl": "oci.png",
     "version": "1.1.0",
-    "description": "Integration with OCI Instances",
+    "description": "Integration with Oracle Cloud(OCI) Core Services(Instances and Virtual Networks)",
     "settings": [
         {
             "name":"privateKey",
@@ -78,6 +78,21 @@
                     "type": "autocomplete",
                     "autocompleteType": "function",
                     "functionName": "listSubnets"
+                },
+                {
+                    "name":"sshKeys",
+                    "viewName":"SSH Keys",
+                    "type": "text"
+                },
+                {
+                    "name":"userData",
+                    "viewName":"User Data",
+                    "type": "text"
+                },
+                {
+                    "name":"waitFor",
+                    "viewName":"Wait for Creation",
+                    "type": "boolean"
                 }
             ]
         },
@@ -101,8 +116,22 @@
                     "name": "cidrBlock",
                     "viewName": "CIDR block",
                     "type": "string"
+                },
+                {
+                    "name": "subCidrBlock",
+                    "viewName": "Subnet CIDR block",
+                    "type": "string"
+                },
+                {
+                    "name": "createInternetGateway",
+                    "viewName": "Create Internet Gateway",
+                    "type": "boolean"
+                },
+                {
+                    "name": "createRouteTable",
+                    "viewName": "Create Default Route Table",
+                    "type": "boolean"
                 }
-                
             ]
         },
         {
@@ -314,6 +343,49 @@
                     "type": "autocomplete",
                     "autocompleteType": "function",
                     "functionName": "listShapes"
+                }
+            ]
+        },
+        {
+            "name":"instanceAction",
+            "viewName":"Instance Action",
+            "params":[
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"instance",
+                    "viewName": "Instance",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listInstances"
+                },
+                {
+                    "name":"action",
+                    "viewName": "Action",
+                    "type": "options",
+                    "options": [
+                        {
+                            "id": "START",
+                            "name": "START"
+                        },
+                        {
+                            "id": "STOP",
+                            "name": "STOP"
+                        },
+                        {
+                            "id": "RESET",
+                            "name": "RESET"
+                        },
+                        {
+                            "id": "SOFTSTOP",
+                            "name": "SOFTSTOP"
+                        }
+                    ]
                 }
             ]
         }

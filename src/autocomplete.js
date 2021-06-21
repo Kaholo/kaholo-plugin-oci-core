@@ -49,16 +49,14 @@ async function listAvailabilityDomains(query, pluginSettings) {
     /**
      * This method will return all availability domains
      */
-     const settings = mapSettings(pluginSettings);
-     const tenancyId = settings.tenancyId;
+     const settings = mapAutoParams(pluginSettings);
      const provider = getProvider(settings);
      const identityClient = await new identity.IdentityClient({
        authenticationDetailsProvider: provider
      });
 
-    const request = { compartmentId: tenancyId };
-    const result = await identityClient.listAvailabilityDomains(request);
-    return handleResult(result, query);
+    const result = await identityClient.listAvailabilityDomains({compartmentId: settings.tenancyId});
+    return handleResult(result, query, "name");
 }
 
 async function listShapes(query, pluginSettings, pluginActionParams) {
@@ -68,16 +66,16 @@ async function listShapes(query, pluginSettings, pluginActionParams) {
      * Must have compartmentId,availabilityDomain before
      */
      const settings = mapAutoParams(pluginSettings), params = mapAutoParams(pluginActionParams);
-     const compartmentId = params.compartment || settings.tenancyId;
-     const availabilityDomain = params.availabilityDomain;
      const provider = getProvider(settings);
 
     const computeClient = new core.ComputeClient({
       authenticationDetailsProvider: provider
     });
     
-    const request = {availabilityDomain, compartmentId};
-    const result = await computeClient.listShapes(request);
+    const result = await computeClient.listShapes({
+      compartmentId: params.compartment || settings.tenancyId,
+      availabilityDomain: params.availabilityDomain
+    })
     return handleResult(result, query, "shape");
 }
 
