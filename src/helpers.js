@@ -9,7 +9,7 @@ const wr = require("oci-workrequests");
     return new common.SimpleAuthenticationDetailsProvider(
         settings.tenancyId,     settings.userId,
         settings.fingerprint,   settings.privateKey,
-        null,                   settings.region
+        null,                   common.Region.fromRegionId(settings.region)
     );
 }
 
