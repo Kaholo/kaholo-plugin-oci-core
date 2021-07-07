@@ -16,7 +16,7 @@ const wr = require("oci-workrequests");
 /***
  * @returns {core.ComputeClient} OCI Compute Client
  ***/
-function getComupteClient(settings){
+function getComputeClient(settings){
     const provider = getProvider(settings);
     return new core.ComputeClient({
       authenticationDetailsProvider: provider
@@ -34,11 +34,21 @@ function getVirtualNetworkClient(settings){
 }
 
 /***
+ * @returns {core.BlockstorageClient} OCI Blockstorage Client
+ ***/
+ function getBlockstorageClient(settings){
+    const provider = getProvider(settings);
+    return new core.BlockstorageClient({
+      authenticationDetailsProvider: provider
+    });
+}
+
+/***
  * @returns {core.ComputeWaiter} OCI Virtual Network Waiter
  ***/
  function getCoreWaiter(settings){
     const provider = getProvider(settings);
-    const computeClient = getComupteClient(settings);
+    const computeClient = getComputeClient(settings);
     const wrClient =  new wr.WorkRequestClient({
       authenticationDetailsProvider: provider
     });
@@ -54,11 +64,12 @@ async function setPromiseResult(result, key, prom){
         throw result;
     }
 }
-  
+
 module.exports = {
-    getComupteClient,
+    getComputeClient,
     getProvider,
     getVirtualNetworkClient,
+    getBlockstorageClient,
     setPromiseResult,
     getCoreWaiter
 }

@@ -25,8 +25,8 @@ module.exports = {
     },
     autocomplete: (value)=>{
         if (!value) return undefined;
-        if (value.id) return value.id;
-        return value;
+        if (typeof(value) !== "object") return value;
+        return value.id;
     },
     object: (value)=>{
         if (!value) return undefined;
