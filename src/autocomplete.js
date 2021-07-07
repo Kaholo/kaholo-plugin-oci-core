@@ -1,6 +1,6 @@
 const core = require("oci-core")
 const identity = require("oci-identity");
-const { getProvider } = require('./helpers');
+const { getProvider, getVirtualNetworkClient, getComputeClient } = require('./helpers');
 const parsers = require("./parsers")
 
 // auto complete helper methods
@@ -13,24 +13,27 @@ function mapAutoParams(autoParams){
   return params;
 }
 
-function handleResult(result, query, firstKey, secondKey){
+
+/***
+ * @returns {[{id, value}]} filtered result items
+ ***/
+function handleResult(result, query, specialKey){
   let items = result.items;
-  if (items.length === 0) throw result;
-  if (!firstKey) {
-    firstKey = "id", secondKey = "name";
-  }
-  else if (!secondKey) {
-    secondKey = firstKey;
-  }
+  if (items.length === 0) return [];
   items = items.map(item => ({
-    id: item[firstKey], 
-    value: item[secondKey] ? item[secondKey] : item[firstKey]
+    id: specialKey ? item[specialKey] : item.id,
+    value:  specialKey ? item[specialKey] : 
+            item.displayName ? item.displayName : 
+            item.name ? item.name : item.id
   }));
 
   if (!query) return items;
-  return items.filter(item => item.value.toLowerCase().includes(query.toLowerCase()));
+  query = query.split(" ");
+  return items.filter(item => query.every(qWord => 
+    item.value.toLowerCase().includes(qWord.toLowerCase())
+  ));
 }
- 
+
 // main auto complete methods
 
 async function listCompartments(query, pluginSettings) {
@@ -68,11 +71,8 @@ async function listShapes(query, pluginSettings, pluginActionParams) {
      * Must have compartmentId,availabilityDomain before
      */
      const settings = mapAutoParams(pluginSettings), params = mapAutoParams(pluginActionParams);
-     const provider = getProvider(settings);
 
-    const computeClient = new core.ComputeClient({
-      authenticationDetailsProvider: provider
-    });
+    const computeClient = getComputeClient(settings);
     
     const result = await computeClient.listShapes({
       compartmentId: params.compartment || settings.tenancyId,
@@ -88,15 +88,12 @@ async function listImages(query, pluginSettings, pluginActionParams) {
      */
     const settings = mapAutoParams(pluginSettings), params = mapAutoParams(pluginActionParams);
     const compartmentId = params.compartment || settings.tenancyId;
-    const shape = params.shapes;
-    const provider = getProvider(settings);
-    const computeClient = new core.ComputeClient({
-      authenticationDetailsProvider: provider
-    });
+    const shape = params.shape;
+    const computeClient = getComputeClient(settings);
 
     const request = {compartmentId, shape};
     const result = await computeClient.listImages(request);
-    return handleResult(result, query, "id", "displayName");
+    return handleResult(result, query);
 }
 
 async function listVCN(query, pluginSettings, pluginActionParams) {
@@ -112,7 +109,7 @@ async function listVCN(query, pluginSettings, pluginActionParams) {
  
     const request = {compartmentId};
     const result = await virtualNetworkClient.listVcns(request);
-    return handleResult(result, query, "id", "displayName");
+    return handleResult(result, query);
 }
 
 async function listSubnets(query, pluginSettings, pluginActionParams) {
@@ -121,14 +118,12 @@ async function listSubnets(query, pluginSettings, pluginActionParams) {
    */
   const settings = mapAutoParams(pluginSettings), params = mapAutoParams(pluginActionParams);
   const compartmentId = params.compartment || settings.tenancyId;
-  const provider = getProvider(settings);
-  const virtualNetworkClient = new core.VirtualNetworkClient({
-    authenticationDetailsProvider: provider
+  const virtualNetworkClient = getVirtualNetworkClient(settings);
+  const result = await virtualNetworkClient.listSubnets({
+    compartmentId,
+    vcnId: params.vcn
   });
-
-  const request = {compartmentId};
-  const result = await virtualNetworkClient.listSubnets(request);
-  return handleResult(result, query, "id", "displayName");
+  return handleResult(result, query);
 }
 
 async function listInstances(query, pluginSettings, pluginActionParams) {
@@ -144,7 +139,102 @@ async function listInstances(query, pluginSettings, pluginActionParams) {
 
   const request = {compartmentId};
   const result = await computeClient.listInstances(request);
-  return handleResult(result, query, "id", "displayName");
+  return handleResult(result, query);
+}
+
+async function listRouteTables(query, pluginSettings, pluginActionParams) {
+  /**
+   * This method will return all VCN
+   */
+  const settings = mapAutoParams(pluginSettings), params = mapAutoParams(pluginActionParams);
+  const compartmentId = params.compartment || settings.tenancyId;
+  const virtualNetworkClient = getVirtualNetworkClient(settings);
+  const result = await virtualNetworkClient.listRouteTables({
+    compartmentId,
+    vcnId: params.vcn
+  });
+  return handleResult(result, query);
+}
+
+async function listSecurityList(query, pluginSettings, pluginActionParams) {
+  /**
+   * This method will return all VCN
+   */
+  const settings = mapAutoParams(pluginSettings), params = mapAutoParams(pluginActionParams);
+  const compartmentId = params.compartment || settings.tenancyId;
+  const virtualNetworkClient = getVirtualNetworkClient(settings);
+  const result = await virtualNetworkClient.listSecurityLists({
+    compartmentId,
+    vcnId: params.vcn
+  });
+  return handleResult(result, query);
+}
+
+async function listDhcpOptions(query, pluginSettings, pluginActionParams) {
+  /**
+   * This method will return all VCN
+   */
+  const settings = mapAutoParams(pluginSettings), params = mapAutoParams(pluginActionParams);
+  const compartmentId = params.compartment || settings.tenancyId;
+  const virtualNetworkClient = getVirtualNetworkClient(settings);
+  const result = await virtualNetworkClient.listDhcpOptions({
+    compartmentId,
+    vcnId: params.vcn
+  });
+  return handleResult(result, query);
+}
+
+async function listServices(query, pluginSettings) {
+  /**
+   * This method will return all VCN
+   */
+  const settings = mapAutoParams(pluginSettings);
+  const virtualNetworkClient = getVirtualNetworkClient(settings);
+  const result = await virtualNetworkClient.listServices({});
+  return handleResult(result, query);
+}
+
+async function listCapacityReservations(query, pluginSettings, pluginActionParams) {
+  /**
+   * This method will return all shapes domains
+   * Must have compartmentId,availabilityDomain before
+   */
+  const settings = mapAutoParams(pluginSettings), params = mapAutoParams(pluginActionParams);
+  const compartmentId = params.compartment || settings.tenancyId;
+  const computeClient = getComputeClient(settings);
+
+  const result = await computeClient.listComputeCapacityReservations({compartmentId});
+  return handleResult(result, query);
+}
+
+async function listDedicatedVmHosts(query, pluginSettings, pluginActionParams) {
+  /**
+   * This method will return all shapes domains
+   * Must have compartmentId,availabilityDomain before
+   */
+  const settings = mapAutoParams(pluginSettings), params = mapAutoParams(pluginActionParams);
+  const compartmentId = params.compartment || settings.tenancyId;
+  const computeClient = getComputeClient(settings);
+  const result = await computeClient.listDedicatedVmHosts({compartmentId});
+  return handleResult(result, query);
+}
+
+async function listFaultDomains(query, pluginSettings, pluginActionParams) {
+  /**
+   * This method will return all shapes domains
+   * Must have compartmentId,availabilityDomain before
+   */
+  const settings = mapAutoParams(pluginSettings), params = mapAutoParams(pluginActionParams);
+  const compartmentId = params.compartment || settings.tenancyId;
+  const provider = getProvider(settings);
+  const identityClient = await new identity.IdentityClient({
+    authenticationDetailsProvider: provider
+  });
+  const result = await identityClient.listFaultDomains({
+    compartmentId,
+    availabilityDomain: params.availabilityDomain
+  });
+  return [{id: undefined, value: "Let Oracle choose"}].concat(handleResult(result, query));
 }
 
 module.exports = {
@@ -154,5 +244,12 @@ module.exports = {
   listCompartments,
   listVCN,
   listSubnets,
-  listInstances
+  listInstances,
+  listRouteTables,
+  listSecurityList,
+  listDhcpOptions,
+  listServices,
+  listCapacityReservations,
+  listDedicatedVmHosts,
+  listFaultDomains
 }

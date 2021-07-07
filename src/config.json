@@ -5,7 +5,7 @@
     "main": "app.js",
     "exposeRoute": true,
     "imgUrl": "oci.png",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Integration with Oracle Cloud(OCI) Core Services(Instances and Virtual Networks)",
     "settings": [
         {
@@ -59,6 +59,37 @@
                     "functionName": "listAvailabilityDomains"
                 },
                 {
+                    "name":"preemptible",
+                    "viewName": "Preemptible Capacity Type",
+                    "type": "boolean"
+                },
+                {
+                    "name":"preserveBootVolume",
+                    "viewName": "(Preemptible) Preserve Boot Volume",
+                    "type": "boolean"
+                },
+                {
+                    "name":"capacityReservation",
+                    "viewName": "Capacity Reservation",
+                    "type": "autocomplete",
+                    "autocompleteType": "function",
+                    "functionName": "listCapacityReservations"
+                },
+                {
+                    "name":"dedicatedVmHost",
+                    "viewName": "Dedicated VM Host",
+                    "type": "autocomplete",
+                    "autocompleteType": "function",
+                    "functionName": "listDedicatedVmHosts"
+                },
+                {
+                    "name":"faultDomain",
+                    "viewName": "Fault Domain",
+                    "type": "autocomplete",
+                    "autocompleteType": "function",
+                    "functionName": "listFaultDomains"
+                },
+                {
                     "name":"shape",
                     "viewName": "Shape",
                     "type": "autocomplete",
@@ -66,11 +97,28 @@
                     "functionName": "listShapes"
                 },
                 {
+                    "name":"shapeOcpu",
+                    "viewName": "Custom Shape OCPU Count",
+                    "type": "string"
+                },
+                {
+                    "name":"shapeMemSize",
+                    "viewName": "Custom Shape Memory(GBs)",
+                    "type": "string"
+                },
+                {
                     "name":"image",
-                    "viewName": "Image",
+                    "viewName": "Image",    
                     "type": "autocomplete",
                     "autocompleteType": "function",
                     "functionName": "listImages"
+                },
+                {
+                    "name":"vcn",
+                    "viewName":"VCN",
+                    "type": "autocomplete",
+                    "autocompleteType": "function",
+                    "functionName": "listVCN"
                 },
                 {
                     "name":"subnet",
@@ -80,9 +128,24 @@
                     "functionName": "listSubnets"
                 },
                 {
+                    "name":"assignPublicIp",
+                    "viewName":"Assign Public IP",
+                    "type": "boolean"
+                },
+                {
                     "name":"sshKeys",
                     "viewName":"SSH Keys",
                     "type": "text"
+                },
+                {
+                    "name":"bootSize",
+                    "viewName":"Custom Boot Volume Size(GBs)",
+                    "type": "string"
+                },
+                {
+                    "name":"inTransitEncryption",
+                    "viewName":"Use In-Transit Encryption",
+                    "type": "boolean"
                 },
                 {
                     "name":"userData",
@@ -118,18 +181,23 @@
                     "type": "string"
                 },
                 {
-                    "name": "subCidrBlock",
-                    "viewName": "Subnet CIDR Block",
-                    "type": "string"
-                },
-                {
-                    "name": "createInternetGateway",
-                    "viewName": "Create Internet Gateway",
+                    "name": "createRelated",
+                    "viewName": "Create Related Resources",
                     "type": "boolean"
                 },
                 {
-                    "name": "createRouteTable",
-                    "viewName": "Create Default Route Table",
+                    "name": "publicSubCidrBlock",
+                    "viewName": "Public Subnet CIDR Block",
+                    "type": "string"
+                },
+                {
+                    "name": "privateSubCidrBlock",
+                    "viewName": "Private Subnet CIDR Block",
+                    "type": "string"
+                },
+                {
+                    "name": "useDnsHostnames",
+                    "viewName": "Use DNS Hostnames",
                     "type": "boolean"
                 }
             ]
@@ -156,11 +224,49 @@
                     "type": "string"
                 },
                 {
+                    "name": "createRelated",
+                    "viewName": "Create Related Resources",
+                    "type": "boolean"
+                },
+                {
+                    "name": "isPrivate",
+                    "viewName": "Private",
+                    "type": "boolean"
+                },
+                {
                     "name":"vcn",
                     "viewName":"VCN",
                     "type":"autocomplete",
                     "autocompleteType":"function",
                     "functionName":"listVCN"
+                },
+                {
+                    "name":"routeTable",
+                    "viewName":"Route Table",
+                    "type":"autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listRouteTables"
+                },
+                {
+                    "name":"availabilityDomain",
+                    "viewName":"Availability Domain",
+                    "type":"autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listAvailabilityDomains"
+                },
+                {
+                    "name":"securityList",
+                    "viewName":"Security List",
+                    "type":"autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listSecurityList"
+                },
+                {
+                    "name":"dhcpOptions",
+                    "viewName":"DHCP Options",
+                    "type":"autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listDhcpOptions"
                 }
             ]
         },
@@ -320,6 +426,63 @@
             ]
         },
         {
+            "name":"addRouteRules",
+            "viewName":"Add Route Rules",
+            "params":[
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"vcn",
+                    "viewName": "VCN",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listVCN"
+                },
+                {
+                    "name":"routeTable",
+                    "viewName":"Route Table",
+                    "type":"autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listRouteTables"
+                },
+                {
+                    "name":"destinations",
+                    "viewName": "Rules Destinations",
+                    "type":"text"
+                },
+                {
+                    "name":"networkEntityIds",
+                    "viewName": "Rules Network Entity IDs",
+                    "type":"text"
+                },
+                {
+                    "name":"destinationsType",
+                    "viewName": "Destinations Type",
+                    "type":"options",
+                    "options": [
+                        {
+                            "id": "CIDR_BLOCK",
+                            "name": "CIDR_BLOCK"
+                        },
+                        {
+                            "id": "SERVICE_CIDR_BLOCK",
+                            "name": "SERVICE_CIDR_BLOCK"
+                        }
+                    ]
+                },
+                {
+                    "name":"description",
+                    "viewName": "Rules Description",
+                    "type":"text"
+                }
+            ]
+        },
+        {
             "name":"updateInstance",
             "viewName":"Update Instance",
             "params":[
@@ -396,6 +559,63 @@
                     "name":"waitFor",
                     "viewName": "Wait Until Finished",
                     "type": "boolean"
+                }
+            ]
+        },
+        {
+            "name":"createNatGateway",
+            "viewName":"Create NAT Gateway",
+            "params":[
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"name",
+                    "viewName": "Name",
+                    "type":"string"
+                },
+                {
+                    "name":"vcn",
+                    "viewName": "VCN",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listVCN"
+                }
+            ]
+        },
+        {
+            "name":"createServiceGateway",
+            "viewName":"Create Service Gateway",
+            "params":[
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"name",
+                    "viewName": "Name",
+                    "type":"string"
+                },
+                {
+                    "name":"vcn",
+                    "viewName": "VCN",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listVCN"
+                },
+                {
+                    "name":"service",
+                    "viewName": "Service",
+                    "type":"autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listServices"
                 }
             ]
         }
