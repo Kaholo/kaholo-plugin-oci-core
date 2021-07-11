@@ -1,6 +1,7 @@
 const common = require("oci-common");
 const core = require("oci-core");
 const wr = require("oci-workrequests");
+const identity = require("oci-identity");
 
 /***
  * @returns {common.SimpleAuthenticationDetailsProvider} OCI Auth Details Provider
@@ -19,6 +20,16 @@ const wr = require("oci-workrequests");
 function getComputeClient(settings){
     const provider = getProvider(settings);
     return new core.ComputeClient({
+      authenticationDetailsProvider: provider
+    });
+}
+
+/***
+ * @returns {identity.IdentityClient} OCI Identity Client
+ ***/
+ function getIdentityClient(settings){
+    const provider = getProvider(settings);
+    return new identity.IdentityClient({
       authenticationDetailsProvider: provider
     });
 }
@@ -71,5 +82,6 @@ module.exports = {
     getVirtualNetworkClient,
     getBlockstorageClient,
     setPromiseResult,
-    getCoreWaiter
+    getCoreWaiter,
+    getIdentityClient
 }
