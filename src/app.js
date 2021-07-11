@@ -1,4 +1,4 @@
-const { getComputeClient, getVirtualNetworkClient, setPromiseResult, getCoreWaiter } = require('./helpers');
+const { getComputeClient, getVirtualNetworkClient, setPromiseResult, getCoreWaiter, getIdentityClient } = require('./helpers');
 const {Instance} = require("oci-core").models;
 const parsers = require('./parsers');
 
@@ -124,7 +124,7 @@ async function createVCN(action, settings) {
   if (publicCidr){
     // create subnet
     action.params.cidrBlock = publicCidr;
-    action.params.name = `Publuc Subnet ${shortId}`;
+    action.params.name = `Public Subnet ${shortId}`;
     action.params.isPrivate = false;
     await setPromiseResult(result, "createPublicSubnet", createSubnet(action, settings));
   }
@@ -309,6 +309,26 @@ async function addRouteRules(action, settings) {
   });
 }
 
+async function createCompartment(action, settings) {
+  const identityClient = getIdentityClient(settings);
+  let result = await identityClient.createCompartment({createCompartmentDetails: {
+    compartmentId: parsers.autocomplete(action.params.parentCompartment) || settings.tenancyId,
+    name: parsers.string(action.params.name),
+    description: parsers.string(action.params.description)
+  }});
+  if (action.params.waitFor){
+    const waiters = identityClient.createWaiters();
+    result = waiters.forCompartment({compartmentId: result.compartment.id}, "ACTIVE")
+  }
+  return result;
+}
+
+async function deleteCompartment(action, settings) {
+  const identityClient = getIdentityClient(settings);
+  return identityClient.deleteCompartment({
+    compartmentId: parsers.autocomplete(action.params.compartment)
+  })
+}
 
 module.exports = {
   launceInstance,
@@ -324,6 +344,8 @@ module.exports = {
   createServiceGateway,
   createRouteTable,
   addRouteRules,
+  createCompartment,
+  deleteCompartment,
   //autocomplete
   ...require('./autocomplete')
 }

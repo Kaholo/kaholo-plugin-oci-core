@@ -1,6 +1,6 @@
 const core = require("oci-core")
 const identity = require("oci-identity");
-const { getProvider, getVirtualNetworkClient, getComputeClient } = require('./helpers');
+const { getProvider, getIdentityClient, getVirtualNetworkClient, getComputeClient } = require('./helpers');
 const parsers = require("./parsers")
 
 // auto complete helper methods
@@ -39,46 +39,41 @@ function handleResult(result, query, specialKey){
 async function listCompartments(query, pluginSettings) {
   const settings = mapAutoParams(pluginSettings);
   const tenancyId = settings.tenancyId;
-  const provider = getProvider(settings);
-  const identityClient = await new identity.IdentityClient({
-    authenticationDetailsProvider: provider
+  const identityClient = getIdentityClient(settings);
+  const result = await identityClient.listCompartments({
+    compartmentId: tenancyId,
+    compartmentIdInSubtree: true,
+    accessLevel: "ACCESSIBLE"
   });
-  const request = { compartmentId: tenancyId };
-  const result = await identityClient.listCompartments(request);
   const compartments = handleResult(result, query);
   compartments.push({id: tenancyId, value: "Tenancy"});
   return compartments;
 }
 
 async function listAvailabilityDomains(query, pluginSettings) {
-    /**
-     * This method will return all availability domains
-     */
-     const settings = mapAutoParams(pluginSettings);
-     const provider = getProvider(settings);
-     const identityClient = await new identity.IdentityClient({
-       authenticationDetailsProvider: provider
-     });
-
-    const result = await identityClient.listAvailabilityDomains({compartmentId: settings.tenancyId});
-    return handleResult(result, query, "name");
+  /**
+   * This method will return all availability domains
+   */
+  const settings = mapAutoParams(pluginSettings);
+  const identityClient = getIdentityClient(settings);
+  const result = await identityClient.listAvailabilityDomains({compartmentId: settings.tenancyId});
+  return handleResult(result, query, "name");
 }
 
 async function listShapes(query, pluginSettings, pluginActionParams) {
   
-    /**
-     * This method will return all shapes domains
-     * Must have compartmentId,availabilityDomain before
-     */
-     const settings = mapAutoParams(pluginSettings), params = mapAutoParams(pluginActionParams);
-
-    const computeClient = getComputeClient(settings);
-    
-    const result = await computeClient.listShapes({
-      compartmentId: params.compartment || settings.tenancyId,
-      availabilityDomain: params.availabilityDomain
-    })
-    return handleResult(result, query, "shape");
+  /**
+   * This method will return all shapes domains
+   * Must have compartmentId,availabilityDomain before
+   */
+  const settings = mapAutoParams(pluginSettings), params = mapAutoParams(pluginActionParams);
+  const computeClient = getComputeClient(settings);
+  
+  const result = await computeClient.listShapes({
+    compartmentId: params.compartment || settings.tenancyId,
+    availabilityDomain: params.availabilityDomain
+  })
+  return handleResult(result, query, "shape");
 }
 
 async function listImages(query, pluginSettings, pluginActionParams) {
@@ -102,10 +97,7 @@ async function listVCN(query, pluginSettings, pluginActionParams) {
      */
     const settings = mapAutoParams(pluginSettings), params = mapAutoParams(pluginActionParams);
     const compartmentId = params.compartment || settings.tenancyId;
-    const provider = getProvider(settings);
-    const virtualNetworkClient = new core.VirtualNetworkClient({
-      authenticationDetailsProvider: provider
-    });
+    const virtualNetworkClient = getVirtualNetworkClient(settings);
  
     const request = {compartmentId};
     const result = await virtualNetworkClient.listVcns(request);
@@ -132,10 +124,7 @@ async function listInstances(query, pluginSettings, pluginActionParams) {
    */
   const settings = mapAutoParams(pluginSettings), params = mapAutoParams(pluginActionParams);
   const compartmentId = params.compartment || settings.tenancyId;
-  const provider = getProvider(settings);
-  const computeClient = new core.ComputeClient({
-    authenticationDetailsProvider: provider
-  });
+  const computeClient = getComputeClient(settings);
 
   const request = {compartmentId};
   const result = await computeClient.listInstances(request);
@@ -226,10 +215,7 @@ async function listFaultDomains(query, pluginSettings, pluginActionParams) {
    */
   const settings = mapAutoParams(pluginSettings), params = mapAutoParams(pluginActionParams);
   const compartmentId = params.compartment || settings.tenancyId;
-  const provider = getProvider(settings);
-  const identityClient = await new identity.IdentityClient({
-    authenticationDetailsProvider: provider
-  });
+  const identityClient = getIdentityClient(settings);
   const result = await identityClient.listFaultDomains({
     compartmentId,
     availabilityDomain: params.availabilityDomain
