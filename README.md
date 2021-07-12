@@ -54,7 +54,7 @@ Creates a new VCN in the specified compartment.
 ### Parameters
 1. VCN Name (String) **Required** - The name of the VCN to create.
 2. Compartment (Autocomplete) **Optional** - The compartment to launch the instance in. If not specified will use tennancy ID.
-3. CIDR Block (String) **Required** - The IP Address Range to assign to the VCN, in CIDR notation.
+3. CIDR Block (String) **Optional** - The IP Address Range to assign to the VCN, in CIDR notation. Default Value is "10.0.0.0/16".
 4. Create Related (Boolean) **Optional** - If specified, create default related resources inside the VCN. The Default resources are an internet gateway always, and if also creates a private subnet, create all required resources in it.
 5. Public Subnet CIDR Block (String) **Optional** - The IP Address Range to assign to the default public subnet in this VCN, in CIDR notation. If specified, create a new public subnet in the VCN.
 6. Private Subnet CIDR Block (String) **Optional** - The IP Address Range to assign to the default private subnet in this VCN, in CIDR notation. If specified, create a new private subnet in the VCN.
