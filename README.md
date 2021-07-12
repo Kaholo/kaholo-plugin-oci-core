@@ -8,6 +8,21 @@ Integration with Oracle Cloud Infrastracture(OCI) Core Services.
 4. Fingerprint (Vault) **Required** -  Will be used to authenticate to the OCI API. Can be taken from Identity\Users\YOUR_USER\API keys.
 5. Region (String) **Required** - Identifier of the region to create the requests in. 
 
+## Method: Create Compartment
+Create a new compartment in the specified parent copartment.
+
+### Parameters
+1. Parent Compartment (Autocomplete) **Required** - The compartment to host the new compartment.
+2. Name (String) **Required** - The name of the new compartment.
+3. Description (AutoComplete) **Required** - The description of the new compartment.
+4. Wait For Creation (Boolean) **Required** - Whether to wait until the compartment is created and active, or not.
+
+## Method: Delete Compartment
+Delete the specified compartments and all related resources.
+
+### Parameters
+1. Compartment (Autocomplete) **Optional** - The compartment to delete.
+
 ## Method Launch instance
 Launches a new instance.
 

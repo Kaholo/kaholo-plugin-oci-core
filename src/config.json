@@ -36,6 +36,47 @@
     ],
     "methods":[
         {
+            "name":"createCompartment",
+            "viewName":"Create Compartment",
+            "params":[
+                {
+                    "name": "parentCompartment",
+                    "viewName": "Parent Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"name",
+                    "viewName": "Name",
+                    "type":"string"
+                },
+                {
+                    "name":"description",
+                    "viewName": "Description",
+                    "type":"text"
+                },
+                {
+                    "name":"waitFor",
+                    "viewName": "Wait For Creation",
+                    "type":"boolean"
+                }
+            ]
+        },
+        {
+            "name":"deleteCompartment",
+            "viewName":"Delete Compartment",
+            "params":[
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                }
+            ]
+        },
+        {
             "name":"launceInstance",
             "viewName":"Launch Instance",
             "params": [
@@ -616,47 +657,6 @@
                     "type":"autocomplete",
                     "autocompleteType":"function",
                     "functionName":"listServices"
-                }
-            ]
-        },
-        {
-            "name":"createCompartment",
-            "viewName":"Create Compartment",
-            "params":[
-                {
-                    "name": "parentCompartment",
-                    "viewName": "Parent Compartment",
-                    "type": "autocomplete",
-                    "autocompleteType":"function",
-                    "functionName":"listCompartments"
-                },
-                {
-                    "name":"name",
-                    "viewName": "Name",
-                    "type":"string"
-                },
-                {
-                    "name":"description",
-                    "viewName": "Description",
-                    "type":"text"
-                },
-                {
-                    "name":"waitFor",
-                    "viewName": "Wait For Creation",
-                    "type":"boolean"
-                }
-            ]
-        },
-        {
-            "name":"deleteCompartment",
-            "viewName":"Delete Compartment",
-            "params":[
-                {
-                    "name": "compartment",
-                    "viewName": "Compartment",
-                    "type": "autocomplete",
-                    "autocompleteType":"function",
-                    "functionName":"listCompartments"
                 }
             ]
         }
