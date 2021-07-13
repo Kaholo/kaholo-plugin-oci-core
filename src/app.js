@@ -96,7 +96,7 @@ async function createVCN(action, settings) {
   const result = {
     createVcn: await networkClient.createVcn({
       createVcnDetails: {
-        cidrBlock: parsers.string(action.params.cidrBlock),
+        cidrBlock: parsers.string(action.params.cidrBlock) || "10.0.0.0/16",
         compartmentId: parsers.autocomplete(action.params.compartment) || settings.tenancyId,
         displayName: vcnName,
         dnsLabel: useDns ? fixedName.substring(0, 10) : undefined
