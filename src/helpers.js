@@ -76,6 +76,10 @@ async function setPromiseResult(result, key, prom){
     }
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 module.exports = {
     getComputeClient,
     getProvider,
@@ -83,5 +87,6 @@ module.exports = {
     getBlockstorageClient,
     setPromiseResult,
     getCoreWaiter,
-    getIdentityClient
+    getIdentityClient,
+    sleep
 }
