@@ -1,4 +1,4 @@
-const { getComputeClient, getVirtualNetworkClient, setPromiseResult, getCoreWaiter, getIdentityClient } = require('./helpers');
+const { getComputeClient, getVirtualNetworkClient, setPromiseResult, getCoreWaiter, getIdentityClient, sleep } = require('./helpers');
 const {Instance} = require("oci-core").models;
 const parsers = require('./parsers');
 
@@ -309,18 +309,28 @@ async function addRouteRules(action, settings) {
   });
 }
 
+
 async function createCompartment(action, settings) {
   const identityClient = getIdentityClient(settings);
-  let result = await identityClient.createCompartment({createCompartmentDetails: {
+  const result = await identityClient.createCompartment({createCompartmentDetails: {
     compartmentId: parsers.autocomplete(action.params.parentCompartment) || settings.tenancyId,
     name: parsers.string(action.params.name),
     description: parsers.string(action.params.description)
   }});
   if (action.params.waitFor){
+    let timesTried = 0;
     const waiters = identityClient.createWaiters();
-    result = waiters.forCompartment({compartmentId: result.compartment.id}, "ACTIVE")
+    while (timesTried++ < 10){
+      try{
+        const waitResult = await waiters.forCompartment({compartmentId: result.compartment.id}, "ACTIVE");
+        return waitResult;
+      }
+      catch(err){}
+      await sleep(500);
+    }
+    throw "Couldn't Create Compartment";
   }
-  return result;
+  return result
 }
 
 async function deleteCompartment(action, settings) {
