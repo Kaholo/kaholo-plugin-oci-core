@@ -309,7 +309,6 @@ async function addRouteRules(action, settings) {
   });
 }
 
-
 async function createCompartment(action, settings) {
   const identityClient = getIdentityClient(settings);
   const result = await identityClient.createCompartment({createCompartmentDetails: {
@@ -340,6 +339,24 @@ async function deleteCompartment(action, settings) {
   })
 }
 
+async function getInstanceAddresses(action, settings) {
+  const privateIps = [], publicIps = [];
+  const computeClient = getComputeClient(settings);
+  const netClient = getVirtualNetworkClient(settings);
+  const instanceId = parsers.autocomplete(action.params.instance);
+  const compartmentId = parsers.autocomplete(action.params.compartment) || settings.tenancyId;
+  if (!instanceId) throw "Must Specify Instance!";
+  const vnicAttachments = (await computeClient.listVnicAttachments({compartmentId, instanceId})).items
+  // get ip addresses for each vnic
+  const vnics = vnicAttachments.map(vnicAttach => netClient.getVnic({vnicId: vnicAttach.vnicId}));
+  for (let i = 0; i < vnics.length; i++){
+    const vnic = (await vnics[i]).vnic;
+    if (vnic.publicIp) publicIps.push(vnic.publicIp);
+    if (vnic.privateIp) privateIps.push(vnic.privateIp);
+  }
+  return {privateIps, publicIps};
+}
+
 module.exports = {
   launceInstance,
   updateInstance,
@@ -356,6 +373,7 @@ module.exports = {
   addRouteRules,
   createCompartment,
   deleteCompartment,
+  getInstanceAddresses,
   //autocomplete
   ...require('./autocomplete')
 }

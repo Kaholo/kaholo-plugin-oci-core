@@ -5,7 +5,7 @@
     "main": "app.js",
     "exposeRoute": true,
     "imgUrl": "oci.png",
-    "version": "1.3.0",
+    "version": "1.3.1",
     "description": "Integration with Oracle Cloud(OCI) Core Services(Instances and Virtual Networks)",
     "settings": [
         {
@@ -657,6 +657,26 @@
                     "type":"autocomplete",
                     "autocompleteType":"function",
                     "functionName":"listServices"
+                }
+            ]
+        },
+        {
+            "name":"getInstanceAddresses",
+            "viewName":"Get Instance Addresses",
+            "params":[
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"instance",
+                    "viewName": "Instance",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listInstances"
                 }
             ]
         }
