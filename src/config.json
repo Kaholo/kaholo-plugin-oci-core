@@ -5,7 +5,8 @@
     "main": "app.js",
     "exposeRoute": true,
     "imgUrl": "oci.png",
-    "version": "1.3.1",
+    "version": "1.3.3",
+    "category": "COMPUTE",
     "description": "Integration with Oracle Cloud(OCI) Core Services(Instances and Virtual Networks)",
     "settings": [
         {
@@ -599,6 +600,41 @@
                 {
                     "name":"waitFor",
                     "viewName": "Wait Until Finished",
+                    "type": "boolean"
+                }
+            ]
+        },
+        {
+            "name":"terminateInstance",
+            "viewName":"Terminate Instance",
+            "params":[
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name":"instance",
+                    "viewName": "Instance",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listInstances"
+                },
+                {
+                    "name":"softStop",
+                    "viewName": "Soft Stop",
+                    "type": "boolean"
+                },
+                {
+                    "name":"preserveBootVolume",
+                    "viewName": "Preserve Boot Volume",
+                    "type": "boolean"
+                },
+                {
+                    "name":"waitFor",
+                    "viewName": "Wait Until Terminated",
                     "type": "boolean"
                 }
             ]

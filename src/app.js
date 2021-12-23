@@ -63,15 +63,39 @@ async function launceInstance(action, settings) {
 
 async function instanceAction(action, settings) {
   const computeClient = getComputeClient(settings);
-  let result = await computeClient.instanceAction({
-    instanceId: parsers.autocomplete(action.params.instance),
-    action: action.params.action
+  const instanceAction = action.params.action;
+  const instanceId = parsers.autocomplete(action.params.instance);
+  if (!instanceAction || !instanceId) throw "Didn't provide one of the required parameters";
+  let result = await computeClient.instanceAction({ instanceId, action: instanceAction });
+  if (action.params.waitFor){
+    const waiters = getCoreWaiter(settings);
+    result = await waiters.forInstance(
+      {instanceId: instanceId},
+      ["START", "RESET"].includes(instanceAction) ? Instance.LifecycleState.Running : Instance.LifecycleState.Stopped
+    )
+  }
+  return result;
+}
+
+async function terminateInstance(action, settings) {
+  const computeClient = getComputeClient(settings);
+  if (action.params.softStop){
+    const tempWaitFor = action.params.waitFor;
+    action.params.waitFor = true;
+    action.params.action = "SOFTSTOP";
+    await instanceAction(action, settings);
+    action.params.waitFor = tempWaitFor;
+  }
+  let result = await computeClient.terminateInstance({ 
+    instanceId: parsers.autocomplete(action.params.instance), 
+    preserveBootVolume: parsers.boolean(action.params.preserveBootVolume)
   });
   if (action.params.waitFor){
     const waiters = getCoreWaiter(settings);
     result = await waiters.forInstance(
-      {instanceId: result.instance.id},
-      ["START", "RESET"].includes(action.params.action) ? Instance.LifecycleState.Running : Instance.LifecycleState.Stopped);
+      {instanceId: instanceId},
+      Instance.LifecycleState.Terminated
+    )
   }
   return result;
 }
@@ -361,6 +385,7 @@ module.exports = {
   launceInstance,
   updateInstance,
   instanceAction,
+  terminateInstance,
   createVCN,
   deleteVCN,
   createSubnet,
